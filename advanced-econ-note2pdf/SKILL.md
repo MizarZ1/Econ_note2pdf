@@ -39,4 +39,21 @@ description: 将经济学板书照片和手写笔记 PDF 整理成 LaTeX 讲义�
 
 正常交付简要链接 PDF 和工程；存在关键缺失时说明影响的章节。普通处理细节不在聊天里逐条展开，保留在工程记录中。
 
-开发集成说明：CLI 与模板将在计划 P3/P4 实现；本阶段仅完成宿主规则。入口文档将在工具接通后补充确切命令。
+## 工具入口
+
+```sh
+python3 <skill>/scripts/econ_note.py doctor
+python3 <skill>/scripts/econ_note.py init --project <project> --inputs <photo-or-pdf> --title '课程讲义' --mode study --domains macro
+python3 <skill>/scripts/econ_note.py prepare --project <project>
+python3 <skill>/scripts/econ_note.py validate --project <project>
+python3 <skill>/scripts/econ_note.py status --project <project>
+python3 <skill>/scripts/econ_note.py assemble --project <project> --mode study
+python3 <skill>/scripts/econ_note.py compile --project <project> --mode study
+python3 <skill>/scripts/econ_note.py render --project <project> --mode study
+```
+
+prepare 后使用返回的全图、预览和 tiles，按内容契约填写 units/ 和 content/，再 validate。内容核对后用 `review --kind content --unit u001 --note '核对范围与结果'`；实际查看全部渲染页后用 `review --kind layout --mode study --note '检查页码与结果'`。两者都带 `--project <project>`。最后执行 `package --project <project> --mode study`。both 模式分别处理 faithful、study 两个输出，内容来源共用。
+
+普通依赖缺失按 doctor 诊断处理；完整命令参数见 `--help`。恢复先 status；修复修改项目内的原始片段，再重新 assemble。课程共用宏放入 project.json 的 preamble 指定文件，不修改安装目录的全局模板。
+
+缺失内容需要部分组装时显式加 `--allow-partial`；编译隔离使用 `--isolate-failures`。未完成复核却确需提前交付时使用 `package --allow-unreviewed`，其状态保留在交付说明中。退出码 3 表示部分或未复核结果，不是正常完成。

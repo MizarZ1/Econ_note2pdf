@@ -16,7 +16,10 @@ FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tif", ".tiff", ".pdf", ".
 def doctor():
     packages = {name: importlib.util.find_spec(name) is not None for name in ("PIL", "pypdf", "pillow_heif")}
     binaries = {name: shutil.which(name) for name in ("pdftoppm", "pdfinfo", "xelatex", "latexmk", "sips")}
-    return {"packages": packages, "tools": binaries, "python_minimum": "3.9", "model": "host agent; no API calls",
+    return {"packages": packages, "tools": binaries,
+            "capabilities": {"images": packages["PIL"], "pdf_intake": packages["pypdf"] and bool(binaries["pdftoppm"]),
+                             "pdf_compile": bool(binaries["xelatex"] and binaries["latexmk"]), "pdf_preview": bool(binaries["pdftoppm"])},
+            "python_minimum": "3.9", "model": "host agent; no API calls",
             "required_missing": [name for name in ("PIL", "pypdf") if not packages[name]]}
 
 

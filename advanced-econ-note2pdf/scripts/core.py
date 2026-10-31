@@ -156,6 +156,8 @@ def tracked_files(root, names):
 
 def unit_digest(root, p, unit):
     names = [v for b in unit.get("blocks", []) for v in b.get("body", {}).values()]
+    if p.get("preamble"):
+        names.append(p["preamble"])
     names += [a["path"] for a in p["assets"]]
     sources = [s for s in p["sources"] if s["id"] in unit.get("source_ids", [])]
     names += [s["image"] for s in sources if s.get("image")]

@@ -44,9 +44,23 @@ def parser():
         commands.add_parser(name).add_argument("--project", required=True)
     review = commands.add_parser("review", help="Record a host review after actually inspecting the material")
     review.add_argument("--project", required=True)
-    review.add_argument("--kind", choices=["content"], required=True)
-    review.add_argument("--unit", required=True)
+    review.add_argument("--kind", choices=["content", "layout"], required=True)
+    review.add_argument("--unit")
+    review.add_argument("--mode", choices=["faithful", "study"])
     review.add_argument("--note", required=True)
+    for name in ("assemble", "compile", "render", "package"):
+        command = commands.add_parser(name)
+        command.add_argument("--project", required=True)
+        command.add_argument("--mode", choices=["faithful", "study"], required=True)
+        if name == "assemble":
+            command.add_argument("--allow-partial", action="store_true")
+        elif name == "compile":
+            command.add_argument("--isolate-failures", action="store_true")
+            command.add_argument("--timeout", type=int, default=120)
+        elif name == "render":
+            command.add_argument("--dpi", type=int, default=130)
+        elif name == "package":
+            command.add_argument("--allow-unreviewed", action="store_true")
     return p
 
 
@@ -75,7 +89,18 @@ def dispatch(args):
         if args.command == "review":
             if not args.note.strip():
                 raise Problem("Review note must describe what was inspected")
-            return model.review_content(args), 0
+            if args.kind == "content":
+                if not args.unit:
+                    raise Problem("Content review requires --unit")
+                return model.review_content(args), 0
+            if not args.mode:
+                raise Problem("Layout review requires --mode")
+            from build import review_layout
+            return review_layout(args), 0
+        if args.command in ("assemble", "compile", "render", "package"):
+            import build
+            command = {"assemble": build.assemble, "compile": build.compile_pdf, "render": build.render, "package": build.package}[args.command]
+            return command(args)
     raise Problem("Unknown command")
 
 
