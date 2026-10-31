@@ -57,3 +57,5 @@ python3 advanced-econ-note2pdf/scripts/econ_note.py status --project work/course
 `package_skill.py` 只打包 skill 必需的脚本、参考文件、模板、元数据与依赖声明，固定 ZIP 条目时间以便复现，输出校验摘要。不会包含原始材料、工作目录、编译缓存、测试夹具或凭据。安装包解压后可直接从其中调用 CLI，无需此仓库 tools/ 或 docs/。
 
 GitHub Actions 的 Engineering checks 只运行无模型、无真实样本的结构检查和合成材料流程；需要 Poppler，不安装 TeX。完整 LaTeX 与渲染自检在本机运行。CI 运行状态以对应 PR 的检查记录为准。
+
+P5 开发检查已完成：安装包解压后的 CLI 可独立运行，重复打包摘要相同；损坏 PDF 返回结构化错误且不留下半成项目；faithful 不含 explanation，普通事项只进入附录，critical/open 强制部分输出且无法通过隐藏附录绕过正文提示。PR #6 的 Engineering checks 已运行成功，合并以最终提交的检查结果为准。

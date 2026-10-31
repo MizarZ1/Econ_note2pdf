@@ -82,6 +82,36 @@ def check(base):
     return root
 
 
+def check_modes(root):
+    path = root / "units/u001.json"
+    original = json.loads(path.read_text())
+    unit = json.loads(json.dumps(original))
+    extra = root / "content/study-extra.tex"
+    extra.write_text("STUDY-ONLY-MARKER\n", encoding="utf-8")
+    try:
+        unit["blocks"].append({"id": "extra001", "kind": "text", "origin": "explanation", "refs": [], "body": {"study": "content/study-extra.tex"}})
+        unit["issues"] = [{"id": "note001", "severity": "note", "status": "open", "block_ids": ["b001"],
+                           "summary": "APPENDIX-ONLY-MARKER", "detail": "Synthetic placement check"}]
+        write(path, unit)
+        run("assemble", "--project", root, "--mode", "faithful")
+        assert "STUDY-ONLY-MARKER" not in (root / "build/faithful/units/u001.tex").read_text()
+        run("assemble", "--project", root, "--mode", "study")
+        assert "STUDY-ONLY-MARKER" in (root / "build/study/units/u001.tex").read_text()
+        assert "APPENDIX-ONLY-MARKER" not in (root / "build/study/units/u001.tex").read_text()
+        assert "APPENDIX-ONLY-MARKER" in (root / "build/study/appendix.tex").read_text()
+        unit["issues"].append({"id": "critical001", "severity": "critical", "status": "open", "block_ids": ["b001"],
+                               "summary": "BODY-CRITICAL-MARKER", "detail": "Synthetic missing condition", "appendix": False})
+        write(path, unit)
+        run("assemble", "--project", root, "--mode", "study", expected=2)
+        result = run("assemble", "--project", root, "--mode", "study", "--allow-partial", expected=3)
+        assert result["partial"] and "BODY-CRITICAL-MARKER" in (root / "build/study/units/u001.tex").read_text()
+    finally:
+        write(path, original)
+        extra.unlink()
+    run("validate", "--project", root)
+    print("PASS: faithful/study separation, ordinary appendix placement, and critical partial-output policy")
+
+
 def check_latex(root):
     p = json.loads((root / "project.json").read_text())
     p["symbols"] = [{"tex": "c_t", "meaning": "第 t 期消费", "scope": "跨期模型"},
@@ -173,11 +203,13 @@ def main():
         if any(args.keep.iterdir()):
             parser.error("--keep directory must be empty")
         root = check(args.keep.resolve())
+        check_modes(root)
         if args.with_latex:
             check_latex(root)
     else:
         with tempfile.TemporaryDirectory(prefix="econ-dev-") as tmp:
             root = check(Path(tmp))
+            check_modes(root)
             if args.with_latex:
                 check_latex(root)
 
