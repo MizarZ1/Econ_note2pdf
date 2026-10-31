@@ -16,6 +16,7 @@ __pycache__/
 /output/
 /tmp/
 /data/private/
+/dist/
 
 # Credentials
 .env

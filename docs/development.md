@@ -7,6 +7,8 @@ python3 advanced-econ-note2pdf/scripts/econ_note.py doctor
 python3 -m compileall -q advanced-econ-note2pdf/scripts
 python3 tools/dev_check.py
 python3 tools/dev_check.py --with-latex
+python3 tools/check_repo.py
+python3 tools/package_skill.py
 ```
 
 `dev_check.py` 生成矩形与短文本的合成图片/PDF，检查文件导入、页面展开、分块、来源版本、裁切冲突与复核失效。它不调用模型、不含真实用户材料，不用于评价笔迹识别或讲义阅读质量。默认临时目录自动清理；`--keep .local/p3-check` 可保留产物定位问题。
@@ -45,3 +47,13 @@ python3 advanced-econ-note2pdf/scripts/econ_note.py status --project work/course
 - P2：skill frontmatter/命名检查及参考链接检查通过。
 - P3：compileall、doctor 与 dev_check.py 通过；本机 Pillow 11.3.0、pypdf 6.10.2、Poppler 可用。合成输入覆盖图片 + 2 页 PDF、幂等准备、裁切冲突、复核失效、过期来源和路径边界。真实材料测试、模型效果测试与用户验收仍未开展。
 - P4：`dev_check.py --with-latex` 通过，检查了编译/渲染/ZIP、未复核打包限制、故意错误的隔离与恢复。修正了将首遍引用警告误当最终警告的问题；3 页合成讲义渲染已人工查看，未见截断与重叠。该结果不代表真实板书识别质量。
+
+## 宿主发现与分发
+
+`.agents/skills/advanced-econ-note2pdf` 和 `.claude/skills/advanced-econ-note2pdf` 是指向根目录 skill 的相对链接，只有一份维护源。`check_repo.py` 检查两条链接、技能元数据、文档引用和 Python 语法。
+
+2026-10-31，本机 Codex CLI 0.166.0-alpha.5.1 的 app-server `skills/list` 实际返回此 skill，`scope=repo`、`enabled=true`。核对方式：从本机 `generate-json-schema` 确认 initialize 和 skills/list 参数，再以 stdio 只查询技能列表；没有创建模型任务。Claude Code 2.1.285 可用，项目入口配置与官方文档一致，尚未运行模型转录。DSH 未识别具体产品，专用加载保持待验证。
+
+`package_skill.py` 只打包 skill 必需的脚本、参考文件、模板、元数据与依赖声明，固定 ZIP 条目时间以便复现，输出校验摘要。不会包含原始材料、工作目录、编译缓存、测试夹具或凭据。安装包解压后可直接从其中调用 CLI，无需此仓库 tools/ 或 docs/。
+
+GitHub Actions 的 Engineering checks 只运行无模型、无真实样本的结构检查和合成材料流程；需要 Poppler，不安装 TeX。完整 LaTeX 与渲染自检在本机运行。CI 运行状态以对应 PR 的检查记录为准。

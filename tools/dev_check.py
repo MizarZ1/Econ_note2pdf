@@ -35,6 +35,10 @@ def check(base):
     pdf = base / "pages.pdf"
     image.save(pdf, save_all=True, append_images=[image], resolution=300)
     root = base / "project"
+    corrupt = base / "corrupt.pdf"
+    corrupt.write_bytes(b"not a PDF")
+    run("init", "--project", base / "rejected", "--inputs", corrupt, "--mode", "study", "--title", "bad input", expected=2)
+    assert not (base / "rejected/project.json").exists()
     run("init", "--project", root, "--inputs", photo, pdf, "--mode", "both", "--title", "工程自检", "--domains", "math")
     run("init", "--project", root, "--inputs", photo, "--mode", "study", "--title", "refuse overwrite", expected=2)
     p = json.loads((root / "project.json").read_text())
