@@ -30,4 +30,4 @@ python3 advanced-econ-note2pdf/scripts/econ_note.py status --project work/course
 
 - P1：文档相对链接、JSON 示例解析与 diff 检查通过。
 - P2：skill frontmatter/命名检查及参考链接检查通过。
-- P3：开发自检结果将在该阶段完成后记录。真实材料测试、模型效果测试与用户验收仍未开展。
+- P3：compileall、doctor 与 dev_check.py 通过；本机 Pillow 11.3.0、pypdf 6.10.2、Poppler 可用。合成输入覆盖图片 + 2 页 PDF、幂等准备、裁切冲突、复核失效、过期来源和路径边界。真实材料测试、模型效果测试与用户验收仍未开展。
