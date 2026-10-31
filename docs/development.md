@@ -1,11 +1,12 @@
 # 开发与自检
 
-最低 Python 3.9。skill 的 `requirements.txt` 只声明 Pillow、pypdf；PDF 渲染另需本地 Poppler（`pdftoppm`），PDF 编译将在 P4 使用 XeLaTeX/latexmk。HEIC 可使用 `pillow-heif` 或 macOS `sips`；脚本不自动安装依赖。
+最低 Python 3.9。skill 的 `requirements.txt` 只声明 Pillow、pypdf；PDF 渲染另需本地 Poppler（`pdftoppm`），PDF 编译使用 XeLaTeX/latexmk。HEIC 可使用 `pillow-heif` 或 macOS `sips`；脚本不自动安装依赖。TeX 需包含 ctex/Fandol、AMS、TikZ/PGFPlots、booktabs、longtable、tabularx、caption、hyperref、bookmark 与 fancyhdr 等模板包。
 
 ```sh
 python3 advanced-econ-note2pdf/scripts/econ_note.py doctor
 python3 -m compileall -q advanced-econ-note2pdf/scripts
 python3 tools/dev_check.py
+python3 tools/dev_check.py --with-latex
 ```
 
 `dev_check.py` 生成矩形与短文本的合成图片/PDF，检查文件导入、页面展开、分块、来源版本、裁切冲突与复核失效。它不调用模型、不含真实用户材料，不用于评价笔迹识别或讲义阅读质量。默认临时目录自动清理；`--keep .local/p3-check` 可保留产物定位问题。
@@ -26,8 +27,21 @@ python3 advanced-econ-note2pdf/scripts/econ_note.py status --project work/course
 
 所有项目写操作使用锁；进程异常退出后先确认 `.econ-note.lock` 中 PID 已不再运行，再删除失效锁。每次更新 project.json 会在 history 保存旧版本；旧图像 revision 不覆盖。内容正文由宿主编辑，脚本不会重写。
 
+## LaTeX 与交付
+
+完成结构和内容填写后执行 `assemble --mode study`、`compile --mode study`、`render --mode study`，每条均带 `--project work/course`。查看渲染页后用 `review --kind layout --mode study --note '实际检查内容'`，完成各单元 content review 后执行 `package --mode study`。both 模式另对 faithful 执行同一流程。
+
+正文片段只写 body。课程共用宏用 project.json 可选 `preamble` 指向项目内 `.tex`；正常编译和单元诊断均加载此文件，公共宏不要定义在另一个单元正文中。生成后的 build 文件不直接修改；修改原片段并重新 assemble，系统会保留旧工程。
+
+编译失败可看返回的 `attempt.log` 与文件/行号；最多作 3 次有依据修复。仍失败时 `compile --isolate-failures` 对单元诊断并保留失败源码，成功的部分 PDF 返回 3；公共模板故障不能靠排除整份内容解决。未解析引用或缺字警告使产物标为 partial，普通版式警告需在页面复核时判断。
+
+普通学术事项汇入 appendix，critical/open 在相邻正文作短提示。compile 日志只留 logs。`package --allow-unreviewed` 可提前导出，但返回 3 并在 delivery.json 标注 unreviewed；默认 package 要求当前内容与页面均已复核。ZIP 包含独立 LaTeX、素材、PDF 与来源记录，不包含完整原件、预览或工具日志。
+
+合成 LaTeX 自检包含中文、跨期公式、定理证明、PGFPlots、来源图片、回归表、矩阵、跨章节引用和普通附录事项；额外检查旧 PDF 不误判、过期构建拒绝、失败单元隔离及修复恢复。该输入是工程夹具，不是课堂转录或验收样本。
+
 ## 开发记录
 
 - P1：文档相对链接、JSON 示例解析与 diff 检查通过。
 - P2：skill frontmatter/命名检查及参考链接检查通过。
 - P3：compileall、doctor 与 dev_check.py 通过；本机 Pillow 11.3.0、pypdf 6.10.2、Poppler 可用。合成输入覆盖图片 + 2 页 PDF、幂等准备、裁切冲突、复核失效、过期来源和路径边界。真实材料测试、模型效果测试与用户验收仍未开展。
+- P4：`dev_check.py --with-latex` 通过，检查了编译/渲染/ZIP、未复核打包限制、故意错误的隔离与恢复。修正了将首遍引用警告误当最终警告的问题；3 页合成讲义渲染已人工查看，未见截断与重叠。该结果不代表真实板书识别质量。

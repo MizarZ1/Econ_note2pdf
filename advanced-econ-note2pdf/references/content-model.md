@@ -6,6 +6,8 @@
 
 必填：`version: 1`、`title`、`mode`（faithful/study/both）、`domains`（macro/micro/econometrics/math 的列表）、`inputs`、`sources`、`assets`、`units`（按阅读顺序的 ID 列表）、`symbols`。
 
+可选 `preamble` 指向项目内 `.tex` 文件，用于课程公共宏和额外包，不含 documentclass 或 document 环境。跨单元使用的自定义宏必须放在此处，避免依赖前一单元的正文定义；正常编译与隔离诊断共用它。
+
 - input：`id`、`name`、`path`（原始副本）、`sha256`。原始副本不覆盖。
 - source：`id`、`input_id`、`page`（从 1 起）、`revision`（未准备时 null）、`image`、`image_sha256`（准备后）、`preview`、`size`、`tiles`、`transform`。未准备时后三类可为空。文件顺序即输入建议顺序；`order_confirmed` 由宿主核对后设 true。
 - tile：`path`、`box`（在当前全图中的归一化区域）。

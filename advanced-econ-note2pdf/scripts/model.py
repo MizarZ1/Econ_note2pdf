@@ -51,6 +51,15 @@ def validate(root):
     for symbol in p["symbols"]:
         if not all(isinstance(symbol.get(k), str) and symbol[k].strip() for k in ("tex", "meaning", "scope")):
             fail("Each symbol needs tex, meaning and scope")
+    if p.get("preamble"):
+        try:
+            path = inside(root, p["preamble"])
+            if path.suffix != ".tex" or not path.is_file():
+                fail("Course preamble must be an existing .tex file")
+            elif re.search(r"\\documentclass|\\(?:begin|end)\s*\{document\}", path.read_text(encoding="utf-8")):
+                fail("Course preamble cannot contain document wrappers")
+        except Problem as exc:
+            fail(str(exc))
     for item in inputs.values():
         try:
             path = inside(root, item.get("path"))
@@ -266,10 +275,15 @@ def status(root):
     except (Problem, TypeError, KeyError):
         current = None
     for mode, b in s["builds"].items():
+        from build import rendering_current, source_digest
         pdf = Path(root) / "build" / mode / "main.pdf"
         pdf_current = bool(b.get("compiled") and pdf.is_file() and sha_file(pdf) == b.get("pdf_sha256"))
-        result["builds"][mode] = {**b, "stale": b.get("fingerprint") != current,
-                                    "pdf_current": pdf_current}
+        stale = b.get("fingerprint") != current or b.get("source_digest") != source_digest(pdf.parent)
+        lr = b.get("layout_review") or {}
+        from core import digest
+        layout_current = (not stale and pdf_current and rendering_current(root, b)
+                          and lr.get("pdf_sha256") == b.get("pdf_sha256") and lr.get("render_digest") == digest(b["render"]))
+        result["builds"][mode] = {**b, "stale": stale, "pdf_current": pdf_current, "layout_review_current": bool(layout_current)}
     return result
 
 
