@@ -34,7 +34,7 @@ def open_image(path, frame=1):
             result = ImageOps.exif_transpose(im).convert("RGB")
             result.load()
             return result
-    except (OSError, ValueError, EOFError) as exc:
+    except (OSError, ValueError, EOFError, Image.DecompressionBombError) as exc:
         if Path(path).suffix.lower() in (".heic", ".heif") and shutil.which("sips"):
             with tempfile.TemporaryDirectory() as tmp:
                 dest = Path(tmp) / "converted.png"
@@ -45,6 +45,15 @@ def open_image(path, frame=1):
 
 
 def page_count(path):
+    try:
+        return _page_count(path)
+    except Problem:
+        raise
+    except Exception as exc:
+        raise Problem("Cannot inspect input %s: %s" % (path.name, exc)) from exc
+
+
+def _page_count(path):
     if path.suffix.lower() == ".pdf":
         from pypdf import PdfReader
         reader = PdfReader(path)
