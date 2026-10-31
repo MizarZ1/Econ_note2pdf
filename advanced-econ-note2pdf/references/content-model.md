@@ -7,7 +7,7 @@
 必填：`version: 1`、`title`、`mode`（faithful/study/both）、`domains`（macro/micro/econometrics/math 的列表）、`inputs`、`sources`、`assets`、`units`（按阅读顺序的 ID 列表）、`symbols`。
 
 - input：`id`、`name`、`path`（原始副本）、`sha256`。原始副本不覆盖。
-- source：`id`、`input_id`、`page`（从 1 起）、`revision`（未准备时 null）、`image`、`preview`、`size`、`tiles`、`transform`。未准备时后三类可为空。文件顺序即输入建议顺序；`order_confirmed` 由宿主核对后设 true。
+- source：`id`、`input_id`、`page`（从 1 起）、`revision`（未准备时 null）、`image`、`image_sha256`（准备后）、`preview`、`size`、`tiles`、`transform`。未准备时后三类可为空。文件顺序即输入建议顺序；`order_confirmed` 由宿主核对后设 true。
 - tile：`path`、`box`（在当前全图中的归一化区域）。
 - transform：`dpi`、`rotate`（顺时针角度）、`quad`（旋转后图片的 TL,TR,BR,BL 四角，归一化）、`enhance`、`tile_size`、`overlap`；EXIF 方向在这些变换前应用。
 - asset：`path`、`source_id`、`revision`、`box`、`sha256`。手绘矢量素材可直接写在块的 LaTeX 中；额外图片也必须登记来源，不能偷偷指向外部文件。
@@ -51,7 +51,7 @@ source ID 如 `s0001`，unit ID 如 `u001`。所有 ID 使用字母开头的 ASC
 - included 必须关联至少一个原文/修正块，且来源一致。
 - duplicate 必须关联实际保留该内容的块，可跨单元；reason 说明重复证据。相似但新增条件不能当重复。
 - excluded 必须写 reason，例如非课程内容；不能以“难识别”排除课程推导。
-- unreadable 必须写 reason，并关联对应占位块或学术事项。关键内容缺失标 critical；结果始终有 gap。
+- unreadable 必须写 reason，并关联对应占位块及该块的学术事项。关键内容缺失标 critical；结果始终有 gap。
 - 各 source 均需覆盖登记。结构完整仍需宿主看全图判断未登记笔迹。
 
 ### 学术事项
