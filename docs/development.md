@@ -59,3 +59,11 @@ python3 advanced-econ-note2pdf/scripts/econ_note.py status --project work/course
 GitHub Actions 的 Engineering checks 只运行无模型、无真实样本的结构检查和合成材料流程；需要 Poppler，不安装 TeX。完整 LaTeX 与渲染自检在本机运行。CI 运行状态以对应 PR 的检查记录为准。
 
 P5 开发检查已完成：安装包解压后的 CLI 可独立运行，重复打包摘要相同；损坏 PDF 返回结构化错误且不留下半成项目；faithful 不含 explanation，普通事项只进入附录，critical/open 强制部分输出且无法通过隐藏附录绕过正文提示。PR #6 的 Engineering checks 已运行成功，合并以最终提交的检查结果为准。
+
+## 发布前回归（2026-11-02）
+
+`python3 tools/publication_check.py` 需要 TeX，检查未引用裁切不导出、忠实版不带复习版内部详情/原文件名、latexmk RC 不执行、常见外部 input 在组装前拒绝以及 LICENSE 随包。`python3 tools/dev_check.py --with-latex` 继续覆盖中文/公式/图表/引用、失败隔离与恢复；当前两项均已通过。
+
+Skills CLI 本地目录安装已在一次性项目内验证，未覆盖个人 skill 目录；README 的远程安装形式使用相同 CLI，私有仓库仍需要访问权限。真实案例只检查经授权的一张照片中完整 Hamilton 条件板面，输出2页；已实看全部页面，Fandol 字体嵌入、中文文本提取正常、当前编译警告为空。照片、转录、讲义、日志和本机路径不入库。
+
+编译限制是在已知威胁上的加固而非完整 TeX 解析器或沙箱。不要将通过黑名单检查等同于可信内容。现有独立工程仍用 XeLaTeX/latexmk，手工重编译时也应禁用 RC，并只编译可信源码。

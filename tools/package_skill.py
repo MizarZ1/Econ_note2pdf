@@ -18,7 +18,7 @@ def package(destination):
     for path in sorted(SKILL.rglob("*")):
         rel = path.relative_to(SKILL)
         if path.is_file() and not path.is_symlink() and "__pycache__" not in rel.parts:
-            if (rel.as_posix() in ("SKILL.md", "requirements.txt") or rel.parts[0] in allowed_roots) and path.suffix in allowed_suffixes:
+            if (rel.as_posix() in ("SKILL.md", "requirements.txt", "LICENSE") or rel.parts[0] in allowed_roots) and (path.suffix in allowed_suffixes or rel.as_posix() == "LICENSE"):
                 files.append(path)
     if SKILL / "SKILL.md" not in files:
         raise RuntimeError("Missing skill entry point")

@@ -56,6 +56,8 @@ python3 <skill>/scripts/econ_note.py render --project <project> --mode study
 
 prepare 后使用返回的全图、预览和 tiles，按内容契约填写 units/ 和 content/，再 validate。内容核对后用 `review --kind content --unit u001 --note '核对范围与结果'`；实际查看全部渲染页后用 `review --kind layout --mode study --note '检查页码与结果'`。两者都带 `--project <project>`。最后执行 `package --project <project> --mode study`。both 模式分别处理 faithful、study 两个输出，内容来源共用。
 
-普通依赖缺失按 doctor 诊断处理；完整命令参数见 `--help`。恢复先 status；修复修改项目内的原始片段，再重新 assemble。课程共用宏放入 project.json 的 preamble 指定文件，不修改安装目录的全局模板。
+普通依赖缺失按 doctor 诊断处理；完整命令参数见 `--help`。恢复先 status；修复修改项目内的原始片段，再重新 assemble。编译禁用 latexmk 自动 RC，设置 TeX paranoid 读写选项，并检查片段中的文件操作和动态指令；这些措施不构成操作系统沙箱，不编译来源不可信的现有 TeX 工程。不放宽限制来处理恶意指令。中文使用模板自带 Fandol 字体，检查最终日志 Missing character 并实看中文页。
+
+课程共用宏放入 project.json 的 preamble 指定文件，不修改安装目录的全局模板。
 
 缺失内容需要部分组装时显式加 `--allow-partial`；编译隔离使用 `--isolate-failures`。未完成复核却确需提前交付时使用 `package --allow-unreviewed`，其状态保留在交付说明中。退出码 3 表示部分或未复核结果，不是正常完成。

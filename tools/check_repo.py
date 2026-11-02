@@ -10,11 +10,13 @@ SKILL = ROOT / "advanced-econ-note2pdf"
 
 def main():
     errors = []
+    if (ROOT / "LICENSE").read_bytes() != (SKILL / "LICENSE").read_bytes():
+        errors.append("Repository and bundled skill license differ")
     entry = (SKILL / "SKILL.md").read_text(encoding="utf-8")
     parts = entry.split("---", 2)
     if len(parts) != 3 or not re.search(r"^name: advanced-econ-note2pdf$", parts[1], re.M) or not re.search(r"^description: .+", parts[1], re.M):
         errors.append("Invalid skill frontmatter")
-    paths = [ROOT / "README.md", ROOT / "AGENTS.md"]
+    paths = list(ROOT.glob("*.md"))
     for directory in (SKILL, ROOT / "docs", ROOT / "tools", ROOT / ".github"):
         paths.extend(p for p in directory.rglob("*") if p.is_file() and "__pycache__" not in p.parts)
     for path in paths:
