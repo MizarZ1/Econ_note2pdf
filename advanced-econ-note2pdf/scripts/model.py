@@ -9,6 +9,21 @@ KINDS = {"text", "equation", "derivation", "definition", "proposition", "proof",
 TEMPLATES = Path(__file__).resolve().parent.parent / "assets" / "latex"
 
 
+def check_tex(text):
+    """Reject file/tool operations in host-authored fragments; not a TeX sandbox."""
+    if "^^" in text:
+        raise Problem("TeX encoded characters are unsupported in course fragments")
+    banned = r"input|include|includeonly|openin|openout|read|readline|write|immediate|newread|newwrite|csname|endcsname|catcode|def|edef|gdef|xdef|let|futurelet|scantokens|special|directlua|useLuaModule|pdfobj|pdfcatalog|pdfannot"
+    if re.search(r"\\(?:" + banned + r")(?![A-Za-z@])", text):
+        raise Problem("Fragment contains unsupported file access or executable TeX primitives")
+    for name in re.findall(r"\\(?:usepackage|RequirePackage)(?:\[[^\]]*\])?\s*\{([^}]+)\}", text):
+        if not re.fullmatch(r"[A-Za-z0-9_, -]+", name):
+            raise Problem("Course packages must be ordinary installed package names")
+    for path in re.findall(r"\\includegraphics(?:\[[^\]]*\])?\s*\{([^}]+)\}", text):
+        if not re.fullmatch(r"assets/[A-Za-z0-9_-]+(?:\.[A-Za-z0-9]+)?", path):
+            raise Problem("Image must use a literal registered assets/name path")
+
+
 def validate(root):
     p, us = project(root), None
     out = {"errors": [], "gaps": [], "warnings": [], "unit_status": {}}
@@ -49,6 +64,10 @@ def validate(root):
         warnings.append("Input order is proposed; confirm against the material and set order_confirmed=true")
         fail("Source order has not been confirmed", gap=True)
     for symbol in p["symbols"]:
+        try:
+            check_tex(symbol.get("tex", ""))
+        except Problem as exc:
+            fail(str(exc))
         if not all(isinstance(symbol.get(k), str) and symbol[k].strip() for k in ("tex", "meaning", "scope")):
             fail("Each symbol needs tex, meaning and scope")
     if p.get("preamble"):
@@ -56,7 +75,9 @@ def validate(root):
             path = inside(root, p["preamble"])
             if path.suffix != ".tex" or not path.is_file():
                 fail("Course preamble must be an existing .tex file")
-            elif re.search(r"\\documentclass|\\(?:begin|end)\s*\{document\}", path.read_text(encoding="utf-8")):
+            else:
+                check_tex(path.read_text(encoding="utf-8"))
+            if path.is_file() and re.search(r"\\documentclass|\\(?:begin|end)\s*\{document\}", path.read_text(encoding="utf-8")):
                 fail("Course preamble cannot contain document wrappers")
         except Problem as exc:
             fail(str(exc))
@@ -203,6 +224,7 @@ def validate(root):
                         fail("Missing .tex fragment: " + str(path_name), uid)
                         continue
                     text = path.read_text(encoding="utf-8")
+                    check_tex(text)
                     if not text.strip() or not re.sub(r"(?m)(?<!\\)%.*$", "", text).strip():
                         fail("Empty body: " + path_name, uid, gap=True)
                     if re.search(r"\\documentclass|\\(?:begin|end)\s*\{document\}", text):

@@ -113,14 +113,18 @@ def assemble(args):
         write(stage / "course-preamble.tex", course)
         body = []
         source_map = {"version": 1, "mode": args.mode, "originals_embedded": False,
-                      "inputs": p["inputs"], "sources": p["sources"], "units": [], "issues": report["gaps"]}
+                      "inputs": [{"id": i["id"], "sha256": i["sha256"]} for i in p["inputs"]],
+                      "sources": [{k: v for k, v in src.items() if k in ("id", "input_id", "page", "revision", "transform", "size")} for src in p["sources"]],
+                      "units": [], "gap_count": len(report["gaps"])}
         for unit in us:
             text = render_unit(root, unit, args.mode)
             file_name = "units/%s.tex" % unit["id"]
             write(stage / file_name, text)
             if text:
                 body.append("\\input{%s}" % file_name)
-            source_map["units"].append({**unit, "output_file": file_name})
+            visible = [b for b in unit["blocks"] if not (args.mode == "faithful" and b["origin"] == "explanation")]
+            source_map["units"].append({"id": unit["id"], "title": unit["title"], "output_file": file_name,
+                "blocks": [{"id": b["id"], "kind": b["kind"], "origin": b["origin"], "refs": b["refs"]} for b in visible]})
         write(stage / "body.tex", "\n".join(body))
         write(stage / "appendix.tex", appendix(us, args.mode))
         write(stage / "symbols.tex", symbol_table(p))
@@ -129,7 +133,19 @@ def assemble(args):
         toc = "\\tableofcontents\n\\medskip\n" if len(body) >= 4 else ""
         write(stage / "main.tex", "\\input{preamble.tex}\n\\input{course-preamble.tex}\n\\title{%s}\n\\author{}\n\\date{}\n"
               "\\begin{document}\n\\maketitle\n%s\\input{symbols.tex}\n\\input{body.tex}\n\\input{appendix.tex}\n\\end{document}\n" % (title, toc))
-        for asset in p["assets"]:
+        # Only literal references in the selected output are deliverable assets.
+        assembled = "\n".join(f.read_text(encoding="utf-8") for f in stage.rglob("*.tex"))
+        assembled = re.sub(r"(?m)(?<!\\)%.*$", "", assembled)
+        used = set(re.findall(r"\\includegraphics(?:\[[^\]]*\])?\s*\{(assets/[^{}]+)\}", assembled))
+        known = {a["path"]: a for a in p["assets"]}
+        selected = set()
+        for name in used:
+            candidates = [name] if name in known else [v for v in known if str(Path(v).with_suffix("")) == name]
+            if len(candidates) != 1:
+                raise Problem("Image must reference one registered literal asset: " + name)
+            selected.add(candidates[0])
+        source_map["assets"] = [a for a in p["assets"] if a["path"] in selected]
+        for asset in source_map["assets"]:
             target = inside(stage, asset["path"])
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(inside(root, asset["path"]), target)
@@ -168,10 +184,10 @@ def context(args, require_pdf=False):
     return root, p, us, data, b, dest
 
 
-def run_process(command, cwd, log, timeout):
+def run_process(command, cwd, log, timeout, env=None):
     """Kill the whole TeX/latexmk process group on timeout or interruption."""
     with log.open("wb") as stream:
-        proc = subprocess.Popen(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT, start_new_session=os.name != "nt")
+        proc = subprocess.Popen(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT, start_new_session=os.name != "nt", env=env)
         try:
             return proc.wait(timeout=timeout)
         except (subprocess.TimeoutExpired, KeyboardInterrupt):
@@ -186,10 +202,13 @@ def run_process(command, cwd, log, timeout):
 def latex(dest, source, attempt, timeout):
     attempt.mkdir(parents=True, exist_ok=True)
     console = attempt / "console.log"
-    command = ["latexmk", "-xelatex", "-interaction=nonstopmode", "-halt-on-error", "-file-line-error", "-no-shell-escape",
-               "-outdir=" + str(attempt), str(source)]
+    command = ["latexmk", "-norc", "-xelatex", "-interaction=nonstopmode", "-halt-on-error", "-file-line-error", "-no-shell-escape",
+               "-outdir=" + str(attempt), source.name]
     try:
-        code = run_process(command, dest, console, timeout)
+        env = os.environ.copy()
+        env.update({"openin_any": "p", "openout_any": "p", "TEXMFOUTPUT": str(attempt),
+                    "TEXINPUTS": str(dest) + "//:" + str(source.parent) + "//:"})
+        code = run_process(command, dest, console, timeout, env=env)
     except subprocess.TimeoutExpired:
         code = 124
     log = attempt / (source.stem + ".log")
@@ -316,8 +335,8 @@ def package(args):
         raise Problem("Content/layout review is missing or stale; inspect first, or explicitly use --allow-unreviewed")
     status = "partial" if b["partial"] else ("reviewed" if reviewed else "unreviewed")
     delivery = {"status": status, "mode": args.mode, "content_reviewed": content_reviewed, "layout_reviewed": layout_reviewed,
-                "failed_units": b["failed_units"], "gaps": b["gaps"], "typesetting_warnings": b["warnings"], "pdf_sha256": b["pdf_sha256"]}
-    description = ("# 交付说明\n\n状态：%s。\n\n本工程使用 XeLaTeX / latexmk，运行 `latexmk -xelatex -no-shell-escape main.tex` 编译。"
+                "failed_units": b["failed_units"], "gap_count": len(b["gaps"]), "typesetting_warning_count": len(b["warnings"]), "pdf_sha256": b["pdf_sha256"]}
+    description = ("# 交付说明\n\n状态：%s。\n\n本工程使用 XeLaTeX / latexmk，运行 `latexmk -norc -xelatex -no-shell-escape main.tex` 编译。"
                    "\n\n正文在 units/，原图素材在 assets/，来源记录见 source-map.json；完整原始材料未嵌入。"
                    "失败单元如有，源码保留在 uncompiled/。\n\n内容复核：%s；页面复核：%s。详细状态见 delivery.json。\n" %
                    (status, content_reviewed, layout_reviewed))

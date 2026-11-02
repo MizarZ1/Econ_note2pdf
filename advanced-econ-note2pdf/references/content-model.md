@@ -44,7 +44,7 @@ source ID 如 `s0001`，unit ID 如 `u001`。所有 ID 使用字母开头的 ASC
 - `body.faithful`：忠实版片段；`body.study`：复习版片段。复习版未提供 study 时可复用 faithful；忠实版不回退使用 study。explanation 必须提供 study，只进入复习版。correction 必须同时提供两个版本，并有学术事项说明修正。
 - 块 ID 在整份项目唯一。片段是正文，可含 align、tikzpicture、表格和环境，不能含 documentclass、begin/end document。避免跨块未闭合环境；跨图推导可放进同一块或多个完整环境并引用前式。
 - 使用 `\label{eq:...}` / `\ref{eq:...}` 关联推导；编译器生成编号，不能在正文猜最终页码。
-- 图片用相对路径 `assets/name.png`。图片在编译工程中以相同路径出现。
+- 图片必须用字面路径 `\includegraphics{assets/name.png}`，可带可选尺寸参数；不使用宏拼接路径。只有当前版本字面引用的已登记素材进入交付包。图片用相对路径 `assets/name.png`。图片在编译工程中以相同路径出现。
 
 ### 覆盖清单
 
@@ -74,3 +74,9 @@ issue 必填 `id`、`severity`（note/critical）、`status`（open/resolved）�
 ## 诊断与退出
 
 `errors` 表示结构损坏、路径无效、来源过期等，组装必须停止；`gaps` 表示来源未准备、正文未填、覆盖未完成或关键学术事项未决，允许显式部分组装；`warnings` 提供非阻塞诊断。命令返回 0/2/3 分别表示成功/失败/缺失或部分结果；status 的 0 仅代表查询完成。
+
+## 分享工程
+
+交付 source-map 只包含当前模式的块标识、来源区域和必要变换，不含原文件名、其他模式正文路径和内部 issue 详情。附录中展示的事项仍属于 PDF 内容。项目工作目录保留完整记录，不应整体公开上传。
+
+片段及课程宏不允许 input/include、文件读写、csname、catcode、底层 def/let、special 等操作；公共宏使用 newcommand 等普通 LaTeX 定义。此检查会拒绝注释中的禁用命令，不是完整 TeX 安全解析器。自定义包仅使用已安装的普通包名，不使用路径。
