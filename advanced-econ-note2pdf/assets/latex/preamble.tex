@@ -1,4 +1,3 @@
-\documentclass[UTF8,a4paper,11pt,fontset=fandol]{ctexart}
 \usepackage[margin=24mm,headheight=15pt]{geometry}
 \usepackage{amsmath,amssymb,amsthm,mathtools,bm}
 \usepackage{graphicx,xcolor,booktabs,longtable,tabularx,array,pdflscape}
@@ -6,6 +5,11 @@
 \usetikzlibrary{arrows.meta,calc,positioning,patterns,intersections}
 \pgfplotsset{compat=1.18}
 \definecolor{EconAccent}{HTML}{234A60}
+\definecolor{EconSource}{HTML}{234F78}
+\usepackage[most]{tcolorbox}
+\newtcolorbox{EconSourceBox}{enhanced,breakable,colback=EconSource!5!white,colframe=EconSource!35!white,boxrule=.4pt,arc=1mm,left=2mm,right=2mm,top=1mm,bottom=1mm,before skip=6pt,after skip=6pt}
+\newcommand{\EconMakeTitle}[2]{\thispagestyle{plain}\noindent{\LARGE\bfseries #1}\par\smallskip{\small #2}\par\medskip}
+\ctexset{section={format=\large\bfseries,beforeskip=2ex,afterskip=1ex},subsection={format=\normalsize\bfseries,beforeskip=1.5ex,afterskip=.6ex}}
 \definecolor{EconNotice}{HTML}{8A481F}
 \usepackage[colorlinks=true,linkcolor=EconAccent,urlcolor=EconAccent,citecolor=EconAccent]{hyperref}
 \usepackage{bookmark,fancyhdr}

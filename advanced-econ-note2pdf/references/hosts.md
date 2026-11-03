@@ -10,11 +10,15 @@
 
 若无视觉能力，报告缺失能力并保留已完成工程；不能把 OCR 或模型服务作为静默替代。若 LaTeX/Poppler 缺失，给出 doctor 诊断，先保留可编辑产物，不宣称 PDF 已生成。
 
+任务开始时的配置询问使用当前宿主可用的交互能力；没有专门询问工具时，用一条简短消息询问使用者。已有选择直接沿用，并保存到项目配置。不要为了询问用途或样式引入新的模型服务或固定审批步骤。
+
 ## Codex
 
 仓库入口为 `.agents/skills/advanced-econ-note2pdf`，相对符号链接指向共用 skill。Codex 官方文档确认仓库扫描 `.agents/skills`，支持链接目录；显式调用 `$advanced-econ-note2pdf`。元数据使用 skill 内的 `agents/openai.yaml`，正常保留自动选择行为。[官方加载说明](https://learn.chatgpt.com/docs/build-skills)
 
 本仓库入口只影响此项目；独立安装时将 ZIP 解出的完整 skill 文件夹放入当前宿主支持的个人或项目 skill 目录。使用新会话或刷新技能列表确认发现情况，不修改用户的模型/API 配置。
+
+交付 PDF 的外部阅读器显示正常，不代表 Codex 内置预览也已验证。遇到中文仅在 Codex 中异常时，区分打开已编译 PDF 与打开 TeX 工程后由宿主重新编译：分别记录实际文件、编译日志与渲染结果，检查字体替换和字形问题。不要仅因本地 Poppler 渲染成功就声称宿主预览问题已解决；可在保留可搜索 PDF 的同时提供实际渲染页供阅读，宿主兼容状态按实际检查报告。
 
 ## Claude Code
 
@@ -40,3 +44,9 @@ DSH 专用自动发现和端到端运行标为待验证，不阻塞通用包交�
 | 真实材料和阅读验收 | 开发完成后另行安排 |
 
 Windows 未开启符号链接支持时，使用 ZIP 中的完整目录替代仓库链接。核心脚本不依赖 macOS，HEIC 的 sips 路径只是可选分支；没有验证过的平台不可写成已通过。
+
+## 中文 PDF 兼容性
+
+编译后会为缺失映射的受支持 Adobe CID 字体内嵌 ToUnicode（依赖 TeX 的 adobemapping/kpsewhich）。已用 PDF.js 在不加载外部 CMaps 的条件下复现旧 PDF 中文缺失，并验证内嵌映射后正常。此项属于渲染器兼容测试，不代表每个宿主 UI 已目视验收。
+
+LaTeX 工程的 documentclass 直接放在 main.tex，支持宿主主文件发现。Codex 内建编译器可能与终端编译器不同；内建编译成功不代表已经执行本工具的 PDF 后处理。优先打开 output 中最终 PDF；手动重编译后运行随包的 `python3 pdf_compat.py main.pdf`。

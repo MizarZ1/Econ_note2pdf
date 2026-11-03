@@ -13,6 +13,8 @@ from core import (Problem, body_path, digest, fingerprint, inside, now, project,
                   save_json, sha_file, state, token, unit_digest, units)
 from model import TEMPLATES, validate
 
+DOCUMENT_CLASS = r"\documentclass[UTF8,a4paper,11pt,fontset=fandol]{ctexart}"
+
 
 def tex_escape(value):
     replacements = {"\\": r"\textbackslash{}", "&": r"\&", "%": r"\%", "$": r"\$", "#": r"\#",
@@ -43,7 +45,7 @@ def heading(unit):
     return "\\section{%s}\\label{unit:%s}\n" % (tex_escape(unit["title"]), unit["id"])
 
 
-def render_unit(root, unit, mode):
+def render_unit(root, unit, mode, source_style="plain"):
     lines = [heading(unit)]
     visible = [b for b in unit["blocks"] if not (b["origin"] == "explanation" and mode == "faithful")]
     if not visible:
@@ -59,6 +61,19 @@ def render_unit(root, unit, mode):
         text = inside(root, path).read_text(encoding="utf-8") if path else ""
         if not re.sub(r"(?m)(?<!\\)%.*$", "", text).strip():
             text = "\\EconMissing{此处原始内容尚未完成转录。}\n"
+        if block["origin"] == "source" and source_style != "plain":
+            # Floats and captions reset color; keep both settings local to the float.
+            caption_color = r"\captionsetup{font+={color=EconSource},labelfont+={color=EconSource}}"
+            text = re.sub(r"(\\begin\s*\{(?:figure|table)\*?\}(?:\s*\[[^\]]*\])?)",
+                          lambda match: match.group(1) + r"\color{EconSource}" + caption_color, text)
+            # Keep longtable's position/column arguments next to its begin command.
+            text = re.sub(r"\\begin\s*\{longtable\}", lambda match: caption_color + match.group(0), text)
+            # Floating/long tables keep their own pagination; only tint their contents.
+            boxed = source_style == "box" and not re.search(r"\\begin\s*\{(?:figure|table|longtable)\*?\}", text)
+            if boxed:
+                text = "\\begin{EconSourceBox}\n" + text + "\n\\end{EconSourceBox}"
+            else:
+                text = "\\begingroup\\color{EconSource}\n" + text + "\n\\par\\endgroup"
         lines.append("%% source-block: %s\n%s\n\n" % (block["id"], text))
     return "".join(lines)
 
@@ -117,7 +132,7 @@ def assemble(args):
                       "sources": [{k: v for k, v in src.items() if k in ("id", "input_id", "page", "revision", "transform", "size")} for src in p["sources"]],
                       "units": [], "gap_count": len(report["gaps"])}
         for unit in us:
-            text = render_unit(root, unit, args.mode)
+            text = render_unit(root, unit, args.mode, p.get("presentation", {}).get("source_style", "plain"))
             file_name = "units/%s.tex" % unit["id"]
             write(stage / file_name, text)
             if text:
@@ -128,11 +143,14 @@ def assemble(args):
         write(stage / "body.tex", "\n".join(body))
         write(stage / "appendix.tex", appendix(us, args.mode))
         write(stage / "symbols.tex", symbol_table(p))
-        mode_title = "忠实转录" if args.mode == "faithful" else "复习讲义"
-        title = tex_escape(p["title"]) + r"\texorpdfstring{\\[.3em]\large " + mode_title + "}{ " + mode_title + "}"
+        mode_title = "忠实转录" if args.mode == "faithful" else ("参考资料" if p.get("presentation", {}).get("purpose") == "reference" else "复习讲义")
+        style = p.get("presentation", {}).get("source_style", "plain")
+        source_label = "浅色块或强调色" if style == "box" else "强调色"
+        legend = "" if style == "plain" else "\\noindent{\\small 原材料内容以%s标识；讲解与补充推导使用黑色。}\\par\n" % source_label
         toc = "\\tableofcontents\n\\medskip\n" if len(body) >= 4 else ""
-        write(stage / "main.tex", "\\input{preamble.tex}\n\\input{course-preamble.tex}\n\\title{%s}\n\\author{}\n\\date{}\n"
-              "\\begin{document}\n\\maketitle\n%s\\input{symbols.tex}\n\\input{body.tex}\n\\input{appendix.tex}\n\\end{document}\n" % (title, toc))
+        write(stage / "main.tex", DOCUMENT_CLASS + "\n\\input{preamble.tex}\n\\input{course-preamble.tex}\n"
+              "\\begin{document}\n\\EconMakeTitle{%s}{%s}\n%s%s\\input{symbols.tex}\n\\input{body.tex}\n\\input{appendix.tex}\n\\end{document}\n"
+              % (tex_escape(p["title"]), mode_title, legend, toc))
         # Only literal references in the selected output are deliverable assets.
         assembled = "\n".join(f.read_text(encoding="utf-8") for f in stage.rglob("*.tex"))
         assembled = re.sub(r"(?m)(?<!\\)%.*$", "", assembled)
@@ -245,7 +263,7 @@ def compile_pdf(args):
             probe = attempt / ("probe-" + uid)
             probe.mkdir()
             source = probe / "probe.tex"
-            write(source, "\\input{preamble.tex}\n\\input{course-preamble.tex}\n\\begin{document}\n\\input{units/%s.tex}\n\\end{document}\n" % uid)
+            write(source, DOCUMENT_CLASS + "\n\\input{preamble.tex}\n\\input{course-preamble.tex}\n\\begin{document}\n\\input{units/%s.tex}\n\\end{document}\n" % uid)
             outcome = latex(dest, source, probe / "out", args.timeout)
             if not outcome["ok"]:
                 failed.append(uid)
@@ -270,6 +288,11 @@ def compile_pdf(args):
     b["warnings"] = result["warnings"]
     if result["ok"]:
         shutil.copy2(result["pdf"], dest / "main.pdf")
+        from pdf_compat import ensure_unicode_maps
+        b["pdf_compat"] = ensure_unicode_maps(dest / "main.pdf")
+        b["warnings"].extend("PDF compatibility: " + v for v in b["pdf_compat"]["diagnostics"])
+        if b["pdf_compat"]["diagnostics"]:
+            b["partial"] = True
         b["compiled"] = now()
         b["pdf_sha256"] = sha_file(dest / "main.pdf")
         b["unresolved_typesetting"] = [w for w in result["warnings"] if "undefined" in w.lower() or "Missing character:" in w]
@@ -337,7 +360,7 @@ def package(args):
     delivery = {"status": status, "mode": args.mode, "content_reviewed": content_reviewed, "layout_reviewed": layout_reviewed,
                 "failed_units": b["failed_units"], "gap_count": len(b["gaps"]), "typesetting_warning_count": len(b["warnings"]), "pdf_sha256": b["pdf_sha256"]}
     description = ("# 交付说明\n\n状态：%s。\n\n本工程使用 XeLaTeX / latexmk，运行 `latexmk -norc -xelatex -no-shell-escape main.tex` 编译。"
-                   "\n\n正文在 units/，原图素材在 assets/，来源记录见 source-map.json；完整原始材料未嵌入。"
+                   "\n重编译后运行 `python3 pdf_compat.py main.pdf` 内嵌中文 Unicode 映射（需要 pypdf 和 TeX adobemapping）。已交付的 PDF 已完成此处理。\n\n正文在 units/，原图素材在 assets/，来源记录见 source-map.json；完整原始材料未嵌入。"
                    "失败单元如有，源码保留在 uncompiled/。\n\n内容复核：%s；页面复核：%s。详细状态见 delivery.json。\n" %
                    (status, content_reviewed, layout_reviewed))
     out = root / "output"
@@ -351,6 +374,8 @@ def package(args):
                 rel = f.relative_to(dest).as_posix()
                 if f.is_file() and (f.suffix == ".tex" or rel.startswith("assets/") or rel in ("main.pdf", "source-map.json")):
                     archive.write(f, rel)
+            archive.write(Path(__file__).with_name("pdf_compat.py"), "pdf_compat.py")
+            archive.write(Path(__file__).resolve().parent.parent / "LICENSE", "LICENSE")
             archive.writestr("DELIVERY.md", description)
             archive.writestr("delivery.json", json.dumps(delivery, ensure_ascii=False, indent=2))
         os.replace(temp, out / (args.mode + ".zip"))

@@ -63,6 +63,14 @@ def validate(root):
     if not p.get("order_confirmed"):
         warnings.append("Input order is proposed; confirm against the material and set order_confirmed=true")
         fail("Source order has not been confirmed", gap=True)
+    presentation = p.get("presentation", {})
+    if not isinstance(presentation, dict):
+        fail("presentation must be an object")
+    else:
+        if presentation.get("purpose", "revision") not in ("revision", "reference"):
+            fail("presentation.purpose must be revision or reference")
+        if presentation.get("source_style", "plain") not in ("plain", "accent", "box"):
+            fail("presentation.source_style must be plain, accent or box")
     for symbol in p["symbols"]:
         try:
             check_tex(symbol.get("tex", ""))

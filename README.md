@@ -40,13 +40,13 @@ npx skills add https://github.com/MizarZ1/Econ_note2pdf/tree/main/advanced-econ-
 | Claude Code | `.claude/skills/advanced-econ-note2pdf` | `/advanced-econ-note2pdf 将这些板书整理成复习讲义` |
 | DSH / 其他 agent | 显式读取完整 skill 目录内的 SKILL.md | 按文件中的流程，使用宿主视觉和本地工具 |
 
-在此仓库启动宿主，提供材料路径与课程信息即可。宿主按需询问整理模式，然后查看图片、填写内容记录、编译和复核。不必手动逐条执行 CLI；CLI 本身不会识别板书。
+在此仓库启动宿主，提供材料路径与课程信息即可。执行 agent 在任务开始时合并询问尚未明确的用途（复习/参考）、整理模式与原文强调方式（统一/深蓝/浅色块），然后查看图片、按知识链组织内容、编译和复核。不必手动逐条执行 CLI；CLI 本身不会识别板书。
 
 独立安装可运行 `python3 tools/package_skill.py`，得到 `dist/advanced-econ-note2pdf-v0.1.zip` 与 SHA-256 校验文件。将 ZIP 中的完整文件夹解压到宿主支持的 skill 目录；平台不支持符号链接时直接复制完整目录。具体加载约定与验证状态见 [宿主说明](advanced-econ-note2pdf/references/hosts.md)。
 
 ## 环境
 
-Python 3.9+、Pillow、pypdf；PDF 渲染需要 Poppler，编译需要 XeLaTeX、latexmk 及包含 ctex/Fandol、TikZ/PGFPlots 等包的 TeX 发行版。HEIC 可选 pillow-heif 或 macOS sips。
+Python 3.9+、Pillow、pypdf；PDF 渲染需要 Poppler，编译需要 XeLaTeX、latexmk 及包含 ctex/Fandol、TikZ/PGFPlots、tcolorbox、adobemapping 等包的 TeX 发行版。HEIC 可选 pillow-heif 或 macOS sips。
 
 先诊断本机能力：
 
@@ -73,7 +73,7 @@ python3 -m venv .venv
 
 合成工程自检已经覆盖中文、数学、图表、引用、附录、编译错误隔离、打包限制和独立工程重编译。Codex 的项目技能发现已实际验证；Claude Code 的加载配置已提供，DSH 专用加载接口待核实。
 
-已用一张真实数理经济学板书完成中文讲解、公式转录、编译和逐页查看；此案例不代表整套课程或跨宿主效果已验收。
+已用三张真实数理经济学照片中的完整板面组织连续讲义，核对问题、变分与必要条件；此案例不代表全部材料或跨宿主效果已验收。
 
 ```sh
 python3 tools/check_repo.py
@@ -88,6 +88,6 @@ GitHub Actions 运行结构检查、合成文件链路和安装包构建；完�
 
 Python 脚本不调用模型 API。图片识别由当前宿主执行，图片是否发往云端、保存多久及模型费用取决于宿主配置；全流程不保证离线。分享 PDF/工程前检查正文、附录与实际引用裁切中的私人信息。工程来源记录不导出原文件名、其他模式内容或内部事项详情；完整记录留在本地工作目录。
 
-编译禁用 latexmk 自动 RC、shell escape，设置 TeX 的 paranoid 读写选项，并在组装前拒绝片段中的常见文件操作、动态命令构造和外部图片路径。它不是操作系统沙箱：不应在有敏感数据的环境运行陌生 TeX 工程；需要处理不可信工程时另用隔离容器。不要为绕过错误放宽读写设置。中文使用 ctex/Fandol；以当前编译日志和全部渲染页确认中文字形。
+编译禁用 latexmk 自动 RC、shell escape，设置 TeX 的 paranoid 读写选项，并在组装前拒绝片段中的常见文件操作、动态命令构造和外部图片路径。它不是操作系统沙箱：不应在有敏感数据的环境运行陌生 TeX 工程；需要处理不可信工程时另用隔离容器。不要为绕过错误放宽读写设置。中文使用 ctex/Fandol；最终 PDF 自动内嵌缺失的标准 Unicode 映射，已通过无外部 CMaps 的 PDF.js 兼容测试。独立工程重编译后需再运行随包的 pdf_compat.py。
 
 代码、skill 规则、文档与自有模板采用 [MIT](LICENSE)；许可证不授予用户输入材料或生成讲义中第三方内容的权利。贡献说明见 [CONTRIBUTING.md](CONTRIBUTING.md)，安全问题见 [SECURITY.md](SECURITY.md)，版本变化见 [CHANGELOG.md](CHANGELOG.md)。
