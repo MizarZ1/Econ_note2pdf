@@ -94,6 +94,7 @@ def initialize(args):
         for name in ("originals", "prepared", "assets", "units", "content", "history", "logs", "build", "previews", "output"):
             (stage / name).mkdir()
         p = {"version": 1, "title": args.title, "mode": args.mode, "domains": args.domains,
+             "presentation": {"purpose": args.purpose, "source_style": args.source_style},
              "inputs": [], "sources": [], "assets": [], "units": [], "symbols": [], "order_confirmed": not proposed}
         for i, src in enumerate(inputs, 1):
             iid = "i%04d" % i

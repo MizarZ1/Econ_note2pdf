@@ -1,12 +1,29 @@
 # 内容契约 v1
 
-这是运行时字段的权威说明。UTF-8 JSON 保存结构，LaTeX 正文放在项目内独立 `.tex` 文件中。宿主可修改 title、mode、domains、units、symbols、单元和正文；sources/assets 的处理元数据由脚本维护。禁止把字符串路径写成项目外绝对路径或 `../`。
+这是运行时字段的权威说明。UTF-8 JSON 保存结构，LaTeX 正文放在项目内独立 `.tex` 文件中。宿主可修改 title、mode、presentation、domains、units、symbols、单元和正文；sources/assets 的处理元数据由脚本维护。禁止把字符串路径写成项目外绝对路径或 `../`。
 
 ## project.json
 
 必填：`version: 1`、`title`、`mode`（faithful/study/both）、`domains`（macro/micro/econometrics/math 的列表）、`inputs`、`sources`、`assets`、`units`（按阅读顺序的 ID 列表）、`symbols`。
 
 可选 `preamble` 指向项目内 `.tex` 文件，用于课程公共宏和额外包，不含 documentclass 或 document 环境。跨单元使用的自定义宏必须放在此处，避免依赖前一单元的正文定义；正常编译与隔离诊断共用它。
+
+可选 `presentation` 保存开始任务时的配置，例如：
+
+```json
+{
+  "presentation": {
+    "purpose": "revision",
+    "source_style": "accent"
+  }
+}
+```
+
+- `purpose`：revision（复习理解）或 reference（查阅参考）。只指导 study 的内容组织；不是新的 mode，不允许改变 faithful 的编辑权限。缺省为 revision。
+- `source_style`：plain（统一排版）、accent（原文深蓝强调）或 box（原文浅色块）。缺省为 plain，兼容已有工程。
+- 初始化可使用 `--purpose revision|reference`、`--source-style plain|accent|box`；宿主也可编辑 project.json 中对应字段，不在正文写技术配置。变更后重新 assemble、compile、render 并复核。
+- 原文强调只作用于 `origin: source` 块。explanation 和 correction 保持普通正文样式；样式不是来源证明，仍需 refs 和实际对照核查。
+- box 对普通来源块使用可跨页色块；含 figure、table 浮动环境或 longtable 长表的块改用强调色，以保留其排版行为。不要为了套入色块删除图表内容或缩小到不可读。
 
 - input：`id`、`name`、`path`（原始副本）、`sha256`。原始副本不覆盖。
 - source：`id`、`input_id`、`page`（从 1 起）、`revision`（未准备时 null）、`image`、`image_sha256`（准备后）、`preview`、`size`、`tiles`、`transform`。未准备时后三类可为空。文件顺序即输入建议顺序；`order_confirmed` 由宿主核对后设 true。
@@ -43,6 +60,7 @@ source ID 如 `s0001`，unit ID 如 `u001`。所有 ID 使用字母开头的 ASC
 - `refs`：每项为 source_id、revision、box。source 必须在该 unit 的 source_ids 内，revision 必须为当前值。
 - `body.faithful`：忠实版片段；`body.study`：复习版片段。复习版未提供 study 时可复用 faithful；忠实版不回退使用 study。explanation 必须提供 study，只进入复习版。correction 必须同时提供两个版本，并有学术事项说明修正。
 - 块 ID 在整份项目唯一。片段是正文，可含 align、tikzpicture、表格和环境，不能含 documentclass、begin/end document。避免跨块未闭合环境；跨图推导可放进同一块或多个完整环境并引用前式。
+- `blocks` 按阅读顺序排列，可交错出现 source 与 explanation。一个块只承担一种来源身份；含原式和补充解释的段落应按身份拆成连续块，避免整段被误标成原文。各块保留完整的 LaTeX 环境。
 - 使用 `\label{eq:...}` / `\ref{eq:...}` 关联推导；编译器生成编号，不能在正文猜最终页码。
 - 图片必须用字面路径 `\includegraphics{assets/name.png}`，可带可选尺寸参数；不使用宏拼接路径。只有当前版本字面引用的已登记素材进入交付包。图片用相对路径 `assets/name.png`。图片在编译工程中以相同路径出现。
 

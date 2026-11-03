@@ -1,12 +1,14 @@
 # 开发与自检
 
-最低 Python 3.9。skill 的 `requirements.txt` 只声明 Pillow、pypdf；PDF 渲染另需本地 Poppler（`pdftoppm`），PDF 编译使用 XeLaTeX/latexmk。HEIC 可使用 `pillow-heif` 或 macOS `sips`；脚本不自动安装依赖。TeX 需包含 ctex/Fandol、AMS、TikZ/PGFPlots、booktabs、longtable、tabularx、caption、hyperref、bookmark 与 fancyhdr 等模板包。
+最低 Python 3.9。skill 的 `requirements.txt` 只声明 Pillow、pypdf；PDF 渲染另需本地 Poppler（`pdftoppm`），PDF 编译使用 XeLaTeX/latexmk。HEIC 可使用 `pillow-heif` 或 macOS `sips`；脚本不自动安装依赖。TeX 需包含 ctex/Fandol、AMS、TikZ/PGFPlots、booktabs、longtable、tabularx、caption、hyperref、bookmark、fancyhdr、tcolorbox 与 adobemapping 等包。
 
 ```sh
 python3 advanced-econ-note2pdf/scripts/econ_note.py doctor
 python3 -m compileall -q advanced-econ-note2pdf/scripts
 python3 tools/dev_check.py
 python3 tools/dev_check.py --with-latex
+python3 tools/pdf_compat_check.py
+python3 tools/presentation_check.py
 python3 tools/check_repo.py
 python3 tools/package_skill.py
 ```
@@ -67,3 +69,11 @@ P5 开发检查已完成：安装包解压后的 CLI 可独立运行，重复打
 Skills CLI 本地目录安装已在一次性项目内验证，未覆盖个人 skill 目录；README 的远程安装形式使用相同 CLI，私有仓库仍需要访问权限。真实案例只检查经授权的一张照片中完整 Hamilton 条件板面，输出2页；已实看全部页面，Fandol 字体嵌入、中文文本提取正常、当前编译警告为空。照片、转录、讲义、日志和本机路径不入库。
 
 编译限制是在已知威胁上的加固而非完整 TeX 解析器或沙箱。不要将通过黑名单检查等同于可信内容。现有独立工程仍用 XeLaTeX/latexmk，手工重编译时也应禁用 RC，并只编译可信源码。
+
+## 连续讲义与中文预览回归（2026-11-03）
+
+`pdf_compat_check.py` 编译合成中文 PDF，验证缺失 ToUnicode 修复、中文提取、已有映射保留、元数据/书签保留、重复执行不改写文件以及未知 CID 集合拒绝猜测。`presentation_check.py` 检查用途配置、旧项目默认值、非法值拒绝、配置变更使旧构建失效，以及来源强调和跨页色块中的内容保留；还检查实际 PDF 中图、表、长表及其题注为来源蓝色，补充解释为黑色。两项需要 XeLaTeX，均已通过；不接入模型。
+
+最终 PDF 在编译后嵌入缺失的受支持标准 Unicode 映射，独立 ZIP 带 `pdf_compat.py` 和使用说明。手工重新编译后执行 `python3 pdf_compat.py main.pdf`。已在无外部 CMaps 的 PDF.js 中复现原 PDF 中文消失，修复后中文可见；Codex 内建编译器已对显式 main.tex 编译成功。此证据不等同于 Codex UI 已目视验收。
+
+授权数理经济学案例扩展为三块完整板面的两页连续讲义：优化对象与约束、Hamilton 定义、一阶变分、协态及边界条件；来源内容与补充推导交错排列，并分别记录。已核对关键公式及条件，查看全部渲染页；当前 PDF 无编译警告。仅覆盖选定板面，不代表全部照片、四学科或跨宿主验收；所有真实材料及交付物保留在忽略目录。

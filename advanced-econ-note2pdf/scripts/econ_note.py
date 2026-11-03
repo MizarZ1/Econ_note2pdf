@@ -20,6 +20,8 @@ def parser():
     init.add_argument("--inputs", nargs="+", required=True)
     init.add_argument("--title", required=True)
     init.add_argument("--mode", required=True, choices=["faithful", "study", "both"])
+    init.add_argument("--purpose", choices=["revision", "reference"], default="revision")
+    init.add_argument("--source-style", choices=["plain", "accent", "box"], default="plain")
     init.add_argument("--domains", nargs="+", default=[], choices=["macro", "micro", "econometrics", "math"])
     prep = commands.add_parser("prepare", help="Prepare full images and overlapping tiles")
     prep.add_argument("--project", required=True)
