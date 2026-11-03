@@ -4,7 +4,9 @@
 
 ## 项目状态
 
-P1–P5 首版核心开发完成，本地处理、LaTeX/PDF 交付、宿主入口与安装包已提供。当前为 v0.1 预览版；已增加一个经授权的真实板书中文排版案例，完整课程和跨宿主验收尚未完成。
+首版核心开发完成，本地处理、LaTeX/PDF 交付、宿主入口与安装包已提供。当前版本为 v0.1.0-preview；已用经授权的真实板书检查中文和阅读排版，完整课程和跨宿主验收尚未完成。
+
+公开分发仓库为 [MizarZ1/econ-note2pdf-skill](https://github.com/MizarZ1/econ-note2pdf-skill)，从经过检查的当前源码建立，不带私有开发历史、课程原件或生成讲义。
 
 ## 首版能力
 
@@ -23,16 +25,30 @@ P1–P5 首版核心开发完成，本地处理、LaTeX/PDF 交付、宿主入�
 需要 Node.js/npm 才能使用 Skills CLI；从 GitHub 直接安装到 Codex 的个人 skill 目录：
 
 ```sh
-npx skills add https://github.com/MizarZ1/Econ_note2pdf/tree/main/advanced-econ-note2pdf --agent codex --global
+npx skills add MizarZ1/econ-note2pdf-skill --skill advanced-econ-note2pdf --agent codex --global
 ```
 
-仓库私有期间需具备 Git 访问权限；公开分发前请按 [发布说明](docs/releasing.md) 生成不含开发历史的快照。安装后重新加载技能列表或开启新会话，再按下方环境说明安装本地依赖。
+安装后可在自己的项目中使用，不必克隆本仓库。Codex 会自动发现新 skill；若未出现，重启 Codex。[官方加载说明](https://learn.chatgpt.com/docs/build-skills)。安装器会显示 skill 的实际目录，再按下方环境说明准备本地依赖。
 
-更新和卸载可用 `npx skills update`、`npx skills remove advanced-econ-note2pdf --agent codex --global`；也可用 ZIP 目录覆盖更新（先备份自定义改动）。安装只复制规则和脚本，不安装 TeX/Poppler 或配置模型。
+也可直接在 Codex 对话中输入：
+
+```text
+$skill-installer install https://github.com/MizarZ1/econ-note2pdf-skill/tree/v0.1.0-preview/advanced-econ-note2pdf
+```
+
+此方式使用 Codex 自带安装器，不要求 Node.js。版本包与校验文件见 [Releases](https://github.com/MizarZ1/econ-note2pdf-skill/releases)。
+
+通过 Skills CLI 安装时，更新和卸载可用 `npx skills update`、`npx skills remove advanced-econ-note2pdf --agent codex --global`；也可用 ZIP 目录覆盖更新（先备份自定义改动）。安装只复制规则和脚本，不安装 TeX/Poppler 或配置模型。
 
 ## 使用
 
-本仓库已经配置两种项目入口，共用 [skill 核心](advanced-econ-note2pdf/SKILL.md)：
+安装后，在 Codex 中提供材料路径并调用：
+
+```text
+$advanced-econ-note2pdf 将 /path/to/板书 整理成中文复习讲义，原文使用浅彩色框。
+```
+
+克隆本仓库进行开发时，已配置两种项目入口，共用 [skill 核心](advanced-econ-note2pdf/SKILL.md)：
 
 | 宿主 | 项目入口 | 调用示例 |
 | --- | --- | --- |
@@ -40,13 +56,15 @@ npx skills add https://github.com/MizarZ1/Econ_note2pdf/tree/main/advanced-econ-
 | Claude Code | `.claude/skills/advanced-econ-note2pdf` | `/advanced-econ-note2pdf 将这些板书整理成复习讲义` |
 | DSH / 其他 agent | 显式读取完整 skill 目录内的 SKILL.md | 按文件中的流程，使用宿主视觉和本地工具 |
 
-在此仓库启动宿主，提供材料路径与课程信息即可。执行 agent 在任务开始时合并询问尚未明确的用途（复习/参考）、整理模式与原文强调方式（统一/深蓝/浅色块），然后查看图片、按知识链组织内容、编译和复核。不必手动逐条执行 CLI；CLI 本身不会识别板书。
+提供材料路径与课程信息后，执行 agent 在任务开始时合并询问尚未明确的用途（复习/参考）、整理模式与原文强调方式（统一/深蓝/浅色块），然后查看图片、按知识链组织内容、编译和复核。不必手动逐条执行 CLI；CLI 本身不会识别板书。
 
-独立安装可运行 `python3 tools/package_skill.py`，得到 `dist/advanced-econ-note2pdf-v0.1.zip` 与 SHA-256 校验文件。将 ZIP 中的完整文件夹解压到宿主支持的 skill 目录；平台不支持符号链接时直接复制完整目录。具体加载约定与验证状态见 [宿主说明](advanced-econ-note2pdf/references/hosts.md)。
+独立安装可从 Releases 下载 ZIP；从源码自行打包可运行 `python3 tools/package_skill.py --output dist/advanced-econ-note2pdf-v0.1.0-preview.zip`，得到安装包与 SHA-256 校验文件。将 ZIP 中的完整文件夹解压到宿主支持的 skill 目录；平台不支持符号链接时直接复制完整目录。具体加载约定与验证状态见 [宿主说明](advanced-econ-note2pdf/references/hosts.md)。
 
 ## 环境
 
 Python 3.9+、Pillow、pypdf；PDF 渲染需要 Poppler，编译需要 XeLaTeX、latexmk 及包含 ctex/Fandol、TikZ/PGFPlots、tcolorbox、adobemapping 等包的 TeX 发行版。HEIC 可选 pillow-heif 或 macOS sips。
+
+以下终端命令以克隆后的仓库根目录为例；全局安装时，将 `advanced-econ-note2pdf` 替换为安装器显示的实际目录，也可让宿主直接运行 skill 的 `doctor` 检查。
 
 先诊断本机能力：
 

@@ -9,7 +9,7 @@
 
 ## Git 与评审
 
-- 远程仓库为 `https://github.com/MizarZ1/Econ_note2pdf.git`，默认分支为 `main`。
+- 私有开发库为 `https://github.com/MizarZ1/Econ_note2pdf.git`，公开分发库为 `https://github.com/MizarZ1/econ-note2pdf-skill.git`，默认分支均为 `main`。操作前检查当前 checkout 的 Git remote，不把公开库的改动推到私有库或反向误推。
 - 从最新基线创建任务分支；文档使用 `docs/`，功能使用 `feat/`，修复使用 `fix/`。保持单次 PR 范围可评审。
 - 在修改前检查未提交内容；保留用户改动，不覆盖已有历史，不强推共享分支。
 - 提交前检查完整 diff、敏感数据和 `git diff --check`。只暂存本次任务文件，使用清楚的 `docs:`、`feat:`、`fix:` 或 `chore:` 提交说明。
