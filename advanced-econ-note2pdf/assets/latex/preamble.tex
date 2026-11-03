@@ -6,17 +6,28 @@
 \pgfplotsset{compat=1.18}
 \definecolor{EconAccent}{HTML}{234A60}
 \definecolor{EconSource}{HTML}{234F78}
+\definecolor{EconInk}{HTML}{20313D}
+\definecolor{EconMuted}{HTML}{647480}
 \usepackage[most]{tcolorbox}
-\newtcolorbox{EconSourceBox}{enhanced,breakable,colback=EconSource!5!white,colframe=EconSource!35!white,boxrule=.4pt,arc=1mm,left=2mm,right=2mm,top=1mm,bottom=1mm,before skip=6pt,after skip=6pt}
-\newcommand{\EconMakeTitle}[2]{\thispagestyle{plain}\noindent{\LARGE\bfseries #1}\par\smallskip{\small #2}\par\medskip}
-\ctexset{section={format=\large\bfseries,beforeskip=2ex,afterskip=1ex},subsection={format=\normalsize\bfseries,beforeskip=1.5ex,afterskip=.6ex}}
+\newtcolorbox{EconSourceBox}{enhanced,breakable,
+  colback=EconSource!4!white,colframe=EconSource!18!white,coltext=EconInk,
+  boxrule=.3pt,borderline west={1.2pt}{0pt}{EconSource!65!white},arc=1mm,
+  left=3mm,right=3mm,top=1mm,bottom=1mm,before skip=6pt,after skip=6pt,
+  before upper={\setlength{\parindent}{0pt}\setlength{\abovedisplayskip}{6pt}\setlength{\belowdisplayskip}{6pt}}}
+\newcommand{\EconMakeTitle}[2]{%
+  \thispagestyle{plain}\begingroup\setlength{\parindent}{0pt}%
+  {\small\sffamily\bfseries\color{EconAccent}#2\par}\vspace{3pt}%
+  {\LARGE\sffamily\bfseries\color{EconInk}#1\par}\vspace{7pt}%
+  {\color{EconAccent!30!white}\hrule height .6pt}%
+  \endgroup\medskip}
+\ctexset{section={format=\large\sffamily\bfseries\color{EconAccent},beforeskip=2.2ex,afterskip=1ex},subsection={format=\normalsize\bfseries\color{EconInk},beforeskip=1.6ex,afterskip=.6ex}}
 \definecolor{EconNotice}{HTML}{8A481F}
 \usepackage[colorlinks=true,linkcolor=EconAccent,urlcolor=EconAccent,citecolor=EconAccent]{hyperref}
 \usepackage{bookmark,fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{\small\nouppercase{\leftmark}}
-\fancyfoot[C]{\small\thepage}
+\fancyhead[L]{\small\color{EconMuted}\nouppercase{\leftmark}}
+\fancyfoot[C]{\small\color{EconMuted}\thepage}
 \renewcommand{\headrulewidth}{0.3pt}
 \setlength{\parindent}{2em}
 \setlength{\parskip}{0.35em}
