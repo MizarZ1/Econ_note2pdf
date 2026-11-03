@@ -38,7 +38,7 @@ $skill-installer install https://github.com/MizarZ1/econ-note2pdf-skill/tree/v0.
 
 此方式使用 Codex 自带安装器，不要求 Node.js。版本包与校验文件见 [Releases](https://github.com/MizarZ1/econ-note2pdf-skill/releases)。
 
-更新和卸载可用 `npx skills update`、`npx skills remove advanced-econ-note2pdf --agent codex --global`；也可用 ZIP 目录覆盖更新（先备份自定义改动）。安装只复制规则和脚本，不安装 TeX/Poppler 或配置模型。
+通过 Skills CLI 安装时，更新和卸载可用 `npx skills update`、`npx skills remove advanced-econ-note2pdf --agent codex --global`；也可用 ZIP 目录覆盖更新（先备份自定义改动）。安装只复制规则和脚本，不安装 TeX/Poppler 或配置模型。
 
 ## 使用
 
@@ -58,7 +58,7 @@ $advanced-econ-note2pdf 将 /path/to/板书 整理成中文复习讲义，原文
 
 提供材料路径与课程信息后，执行 agent 在任务开始时合并询问尚未明确的用途（复习/参考）、整理模式与原文强调方式（统一/深蓝/浅色块），然后查看图片、按知识链组织内容、编译和复核。不必手动逐条执行 CLI；CLI 本身不会识别板书。
 
-独立安装可运行 `python3 tools/package_skill.py`，得到 `dist/advanced-econ-note2pdf-v0.1.zip` 与 SHA-256 校验文件。将 ZIP 中的完整文件夹解压到宿主支持的 skill 目录；平台不支持符号链接时直接复制完整目录。具体加载约定与验证状态见 [宿主说明](advanced-econ-note2pdf/references/hosts.md)。
+独立安装可从 Releases 下载 ZIP；从源码自行打包可运行 `python3 tools/package_skill.py --output dist/advanced-econ-note2pdf-v0.1.0-preview.zip`，得到安装包与 SHA-256 校验文件。将 ZIP 中的完整文件夹解压到宿主支持的 skill 目录；平台不支持符号链接时直接复制完整目录。具体加载约定与验证状态见 [宿主说明](advanced-econ-note2pdf/references/hosts.md)。
 
 ## 环境
 
