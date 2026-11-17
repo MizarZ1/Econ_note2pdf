@@ -2,6 +2,7 @@
 
 ## 未发布
 
+- 精简入口与重复配置／编辑／复核说明，按阶段读取参考；保留核心质量要求、字段接口与模板行为。
 - 补齐 Claude Code、Claude 网页／桌面端 Skills 上传和 DeepSeek Harness 的安装与依赖说明，共用完整 skill 包。
 - 增加隔离安装布局、资源定位和独立编译检查；DeepSeek Harness 实际 provider／registry 发现已验证，网页上传与跨宿主模型转录仍待验证。
 

@@ -90,4 +90,12 @@ Claude 上传包沿用同名根目录的完整 ZIP；网页上传帮助与执行
 
 DeepSeek Harness 0.2.1-rc.5 使用本机已安装的 `FileSystemSkillProvider` 和 `SkillRegistry` 作无模型发现检查：仓库 `.agents` 链接、隔离项目 `.dsh`、隔离用户根及仅 custom 根均成功加载正文，正文摘要一致、参考文件／脚本／模板存在；registry 同名优先级选择 project-dsh，snapshot complete。隔离测试关闭 watch，使用临时 dshHome／agentsHome，不读取凭据或改变用户配置。通过 Electron Node 模式载入实际已安装模块；本机路径、应用源码与原始 JSON 证据仅在忽略目录保留。此检查不代表模型图像理解或端到端讲义运行。
 
-安装与加载规则、官方来源及能力边界统一见 [hosts.md](../advanced-econ-note2pdf/references/hosts.md)。旧版 skill 和两张合成课堂图片已保存在本地，后续用于规则精简对照；当前尚无效果或实际 token 降幅结论。
+安装与加载规则、官方来源及能力边界统一见 [hosts.md](../advanced-econ-note2pdf/references/hosts.md)。旧版 skill 和两张合成课堂图片已保存在本地；规则精简对照另见下节，不以安装探测数据推断实际 token 降幅。
+
+## 2026-11-17 规则结构精简
+
+配置询问集中在入口，模式／来源与阅读排版集中在 editorial，执行命令／恢复／复核集中在 workflow，content-model 保留字段与状态定义并链接操作说明。完整转换仍须读取必要参考；安装排错和学科指南按条件读取。脚本、模板、字段接口及学科规则未改。
+
+逐条规则归属、独立审查修正、静态字符统计与同材料转换结果见 [规则精简验证记录](validation/2026-11-17-skill-refactor.md)。入口减少 57.0%，入口与三份共用参考减少 15.7%；安装说明补齐后，全部 Markdown 总量增加 0.9%。未取得可比运行 token 数据，不能把这些字符变化当作成本降幅。
+
+规则阶段隔离安装含 LaTeX 检查、仓库检查、skill 校验和 18 种命令参数解析通过。最终共用 ZIP 为本地开发候选包，未同步分发库、打标签或发布 Release。
