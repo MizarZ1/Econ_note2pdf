@@ -98,4 +98,4 @@ DeepSeek Harness 0.2.1-rc.5 使用本机已安装的 `FileSystemSkillProvider` �
 
 逐条规则归属、独立审查修正、静态字符统计与同材料转换结果见 [规则精简验证记录](validation/2026-11-17-skill-refactor.md)。入口减少 57.0%，入口与三份共用参考减少 15.7%；安装说明补齐后，全部 Markdown 总量增加 0.9%。未取得可比运行 token 数据，不能把这些字符变化当作成本降幅。
 
-规则阶段隔离安装含 LaTeX 检查、仓库检查、skill 校验和 18 种命令参数解析通过。最终共用 ZIP 为本地开发候选包，未同步分发库、打标签或发布 Release。
+规则阶段隔离安装含 LaTeX 检查、仓库检查、skill 校验和 18 种命令参数解析通过。规则阶段完成时仅生成本地候选 ZIP；后续公开库同步记录见 [优化计划](plans/2026-11-17-host-installation-and-skill-refactor-plan.md)。版本标签及 Release 另行安排。
