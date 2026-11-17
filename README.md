@@ -26,6 +26,8 @@ $skill-installer install https://github.com/MizarZ1/econ-note2pdf-skill/tree/v0.
 npx skills add MizarZ1/econ-note2pdf-skill --skill advanced-econ-note2pdf --agent codex --global
 ```
 
+上述带版本号的链接安装已发布的 `v0.1.1-preview`。如需 `main` 分支的最新改动，将链接中的 `v0.1.1-preview` 换为 `main`；版本变化见 [CHANGELOG](CHANGELOG.md)。
+
 安装后可在自己的项目中使用，无需克隆仓库。若 Codex 中未出现该 skill，重启后再试。其他宿主的加载方式见 [宿主说明](advanced-econ-note2pdf/references/hosts.md)。
 
 ## 安装到 Claude Code
@@ -36,6 +38,16 @@ npx skills add MizarZ1/econ-note2pdf-skill --skill advanced-econ-note2pdf --agen
 - 仅当前项目使用：`<项目>/.claude/skills/advanced-econ-note2pdf/`。
 
 最终应直接找到该目录下的 `SKILL.md`，不要多套一层同名目录。新会话用 `/skills` 查看，再通过 `/advanced-econ-note2pdf` 调用。克隆本仓库开发时，已有项目入口可复用。个人级同名技能优先，安装后核对实际加载来源。[官方说明](https://code.claude.com/docs/en/skills)
+
+如需将 `main` 分支的最新改动制成完整安装／上传包，在终端执行：
+
+```sh
+git clone --branch main https://github.com/MizarZ1/econ-note2pdf-skill.git
+cd econ-note2pdf-skill
+python3 tools/package_skill.py --output dist/advanced-econ-note2pdf-main.zip
+```
+
+生成的 ZIP 与下面的网页／桌面上传、DSH 目录安装共用；GitHub 自动提供的整个仓库源码 ZIP 不是 skill 上传包。
 
 ## 上传到 Claude 网页／桌面端
 
